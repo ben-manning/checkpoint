@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 
 const healthRoutes = require('./routes/healthRoutes');
+const projectsRoutes = require('./routes/projectsRoutes');
 const errorHandler = require('./middleware/errorHandler');
 require('./db');
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', healthRoutes);
+app.use('/api/projects', projectsRoutes);
 
 app.use(errorHandler);
 

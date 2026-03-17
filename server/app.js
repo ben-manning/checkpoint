@@ -9,6 +9,7 @@ const projectTasksRoutes = require('./routes/projectTasksRoutes');
 const projectsRoutes = require('./routes/projectsRoutes');
 const tasksRoutes = require('./routes/tasksRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const verifyToken = require('./middleware/verifyToken');
 require('./db');
 
 const app = express();
@@ -19,9 +20,9 @@ app.use(express.json());
 
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectsRoutes);
-app.use('/api/projects/:id/tasks', projectTasksRoutes);
-app.use('/api/tasks', tasksRoutes);
+app.use('/api/projects', verifyToken, projectsRoutes);
+app.use('/api/projects/:id/tasks', verifyToken, projectTasksRoutes);
+app.use('/api/tasks', verifyToken, tasksRoutes);
 
 app.use(errorHandler);
 

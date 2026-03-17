@@ -69,4 +69,21 @@ const login = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login };
+const me = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, created_at FROM users WHERE id = $1',
+      [req.user.userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json(result.rows[0]);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { register, login, me };

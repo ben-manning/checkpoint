@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const authRoutes = require('./routes/authRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const projectTasksRoutes = require('./routes/projectTasksRoutes');
 const projectsRoutes = require('./routes/projectsRoutes');
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', healthRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/projects/:id/tasks', projectTasksRoutes);
 app.use('/api/tasks', tasksRoutes);

@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import Nav from './components/Nav.jsx';
 import './App.css'
 
 const PrivateRoute = ({ isAuthenticated, children }) => {
@@ -20,6 +21,7 @@ function App() {
   const { currentUser } = useAuth();
   return (
     <>
+      <Nav />
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/login' element={<Login />} />

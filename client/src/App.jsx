@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router';
 import Home from './components/Home.jsx';
 import Dashboard from './components/Dashboard.jsx';
@@ -19,7 +18,6 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 
 function App() {
   const { currentUser } = useAuth();
-  const [isAuthenticated, setIsAuthenticated] = useState(currentUser);
   return (
     <>
       <Routes>
@@ -29,7 +27,7 @@ function App() {
         <Route 
           path='/dashboard' 
           element={
-            <PrivateRoute isAuthenticated={isAuthenticated} >
+            <PrivateRoute isAuthenticated={currentUser} >
               <Dashboard />
             </PrivateRoute>
           } 

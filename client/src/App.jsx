@@ -1,19 +1,37 @@
 import { useState } from 'react'
-import { Routes, Route } from 'react-router';
+import { Routes, Route, Navigate, useLocation } from 'react-router';
 import Home from './components/Home.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import './App.css'
 
+const PrivateRoute = ({ isAuthenticated, children }) => {
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to='/login' replace state={{ from: location }} />;
+  }
+
+  return children;
+};
+
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   return (
     <>
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
-        <Route path='/dashboard' element={<Dashboard />} />
+        <Route 
+          path='/dashboard' 
+          element={
+            <PrivateRoute isAuthenticated={isAuthenticated} >
+              <Dashboard />
+            </PrivateRoute>
+          } 
+        />
       </Routes>
     </>
   )

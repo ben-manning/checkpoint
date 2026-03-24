@@ -1,9 +1,8 @@
 import { createContext, useState, useContext } from 'react';
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-
   const login = (userDetails) => {
     // userDetails will be an object: { id/name/email } for the moment.
 
@@ -25,5 +24,5 @@ const AuthProvider = ({ children }) => {
   )
 }
 
-// export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);
 export default AuthProvider;

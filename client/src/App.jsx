@@ -4,6 +4,7 @@ import Home from './components/Home.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
+import { useAuth } from './context/AuthContext.jsx';
 import './App.css'
 
 const PrivateRoute = ({ isAuthenticated, children }) => {
@@ -17,7 +18,8 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { currentUser } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(currentUser);
   return (
     <>
       <Routes>

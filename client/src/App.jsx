@@ -1,15 +1,19 @@
 import { useState } from 'react'
 import { Routes, Route } from 'react-router';
+import Home from './components/Home.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import Login from './components/Login.jsx';
+import Register from './components/Register.jsx';
 import './App.css'
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path='/' element='This is the home route' />
-        <Route path='/login' element='this is the login route' />
-        <Route path='/register' element='this is the register route' />
-        <Route path='/dashboard' element='this is the dashboard route' />
+        <Route path='/' element={<Home />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/dashboard' element={<Dashboard />} />
       </Routes>
     </>
   )

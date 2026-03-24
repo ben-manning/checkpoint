@@ -1,9 +1,10 @@
-import { useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router';
 import Home from './components/Home.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
+import { useAuth } from './context/AuthContext.jsx';
+import Nav from './components/Nav.jsx';
 import './App.css'
 
 const PrivateRoute = ({ isAuthenticated, children }) => {
@@ -17,9 +18,10 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { currentUser } = useAuth();
   return (
     <>
+      <Nav />
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/login' element={<Login />} />
@@ -27,7 +29,7 @@ function App() {
         <Route 
           path='/dashboard' 
           element={
-            <PrivateRoute isAuthenticated={isAuthenticated} >
+            <PrivateRoute isAuthenticated={currentUser} >
               <Dashboard />
             </PrivateRoute>
           } 

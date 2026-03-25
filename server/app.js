@@ -29,18 +29,36 @@ const allowedOrigins = [
   'http://localhost:3000',
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-      return callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+  // Non-browser requests (no Origin header) should pass through.
+  if (!origin) {
+    return next();
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+
+    return next();
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.status(403).json({ message: 'CORS origin not allowed' });
+  }
+
+  return res.status(403).json({ message: 'CORS origin not allowed' });
+});
+
+app.use(cors({ credentials: true }));
 app.use(express.json());
 
 app.use('/api', healthRoutes);

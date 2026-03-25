@@ -3,22 +3,28 @@ const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const login = (userDetails) => {
-    // userDetails will be an object: { id/name/email } for the moment.
+  const [token, setToken] = useState(null);
 
-    if (userDetails) {
-      setCurrentUser(userDetails);
+  const login = ({ user, token: jwtToken }) => {
+    if (user && jwtToken) {
+      setCurrentUser(user);
+      setToken(jwtToken);
     }
   }
 
   const logout = () => {
-    if (currentUser) {
+    if (currentUser || token) {
       setCurrentUser(null);
+      setToken(null);
     }
   }
 
+  const getAuthHeaders = () => (
+    token ? { Authorization: `Bearer ${token}` } : {}
+  );
+
   return (
-    <AuthContext value={{ currentUser, login, logout }}>
+    <AuthContext value={{ currentUser, token, login, logout, getAuthHeaders }}>
       { children }
     </AuthContext>
   )

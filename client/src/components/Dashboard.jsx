@@ -18,6 +18,9 @@ const Dashboard = () => {
   });
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const statusOptions = useMemo(() => ['active', 'on-hold', 'completed'], []);
 
@@ -95,6 +98,32 @@ const Dashboard = () => {
     }
   };
 
+  const openDeleteConfirm = (project) => {
+    setConfirmDelete(project);
+    setDeleteError('');
+  };
+
+  const closeDeleteConfirm = () => {
+    if (isDeleting) return;
+    setConfirmDelete(null);
+    setDeleteError('');
+  };
+
+  const handleDeleteProject = async () => {
+    try {
+      setDeleteError('');
+      setIsDeleting(true);
+      await api.delete(`/projects/${confirmDelete.id}`);
+      setProjects((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+      setConfirmDelete(null);
+    } catch (err) {
+      const apiMessage = err.response?.data?.message;
+      setDeleteError(apiMessage || 'Unable to delete project right now');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleUpdateProject = async (e) => {
     e.preventDefault();
 
@@ -158,6 +187,14 @@ const Dashboard = () => {
                       onClick={() => openEditModal(project)}
                     >
                       ✏️
+                    </button>
+                    <button
+                      type='button'
+                      className='icon-btn icon-btn-danger'
+                      aria-label={`Delete ${project.title}`}
+                      onClick={() => openDeleteConfirm(project)}
+                    >
+                      🗑️
                     </button>
                   </div>
                 </div>
@@ -223,6 +260,32 @@ const Dashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {confirmDelete && (
+        <div className='modal-overlay' role='presentation' onClick={closeDeleteConfirm}>
+          <div
+            className='modal-card'
+            role='alertdialog'
+            aria-modal='true'
+            aria-label='Confirm delete project'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Delete Project</h3>
+            <p>
+              Are you sure you want to delete <strong>{confirmDelete.title}</strong>? This cannot be
+              undone.
+            </p>
+            {deleteError && <p className='error'>{deleteError}</p>}
+            <div className='modal-actions'>
+              <button type='button' className='ghost-btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
+                Cancel
+              </button>
+              <button type='button' className='danger-btn' onClick={handleDeleteProject} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

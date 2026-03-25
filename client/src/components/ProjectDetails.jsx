@@ -37,6 +37,9 @@ const ProjectDetails = () => {
   const [taskFormData, setTaskFormData] = useState(EMPTY_TASK_FORM);
   const [taskFormError, setTaskFormError] = useState('');
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     const fetchProjectAndTasks = async () => {
@@ -115,6 +118,32 @@ const ProjectDetails = () => {
     setIsTaskModalOpen(false);
     setTaskFormData(EMPTY_TASK_FORM);
     setTaskFormError('');
+  };
+
+  const openDeleteConfirm = (task) => {
+    setConfirmDelete(task);
+    setDeleteError('');
+  };
+
+  const closeDeleteConfirm = () => {
+    if (isDeleting) return;
+    setConfirmDelete(null);
+    setDeleteError('');
+  };
+
+  const handleDeleteTask = async () => {
+    try {
+      setDeleteError('');
+      setIsDeleting(true);
+      await api.delete(`/tasks/${confirmDelete.id}`);
+      setTasks((prev) => prev.filter((t) => t.id !== confirmDelete.id));
+      setConfirmDelete(null);
+    } catch (err) {
+      const apiMessage = err.response?.data?.message;
+      setDeleteError(apiMessage || 'Unable to delete task right now');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleTaskChange = (e) => {
@@ -225,7 +254,17 @@ const ProjectDetails = () => {
               ) : (
                 tasksByColumn[column.key].map((task) => (
                   <article key={task.id} className='task-card'>
-                    <h4>{task.title}</h4>
+                    <div className='task-card-head'>
+                      <h4>{task.title}</h4>
+                      <button
+                        type='button'
+                        className='icon-btn icon-btn-danger'
+                        aria-label={`Delete ${task.title}`}
+                        onClick={() => openDeleteConfirm(task)}
+                      >
+                        🗑️
+                      </button>
+                    </div>
                     <p>{task.description || 'No description'}</p>
                     <small>
                       Status: {STATUS_LABELS[task.status] || task.status}
@@ -318,6 +357,32 @@ const ProjectDetails = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {confirmDelete && (
+        <div className='modal-overlay' role='presentation' onClick={closeDeleteConfirm}>
+          <div
+            className='modal-card'
+            role='alertdialog'
+            aria-modal='true'
+            aria-label='Confirm delete task'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Delete Task</h3>
+            <p>
+              Are you sure you want to delete <strong>{confirmDelete.title}</strong>? This cannot be
+              undone.
+            </p>
+            {deleteError && <p className='form-error'>{deleteError}</p>}
+            <div className='modal-actions'>
+              <button type='button' className='ghost-btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
+                Cancel
+              </button>
+              <button type='button' className='danger-btn' onClick={handleDeleteTask} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -15,6 +15,16 @@ const STATUS_LABELS = {
   done: 'Done',
 };
 
+const PRIORITY_OPTIONS = ['low', 'medium', 'high'];
+
+const EMPTY_TASK_FORM = {
+  title: '',
+  description: '',
+  status: 'todo',
+  priority: 'medium',
+  due_date: '',
+};
+
 const ProjectDetails = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -22,6 +32,11 @@ const ProjectDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [movingTaskId, setMovingTaskId] = useState(null);
+
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskFormData, setTaskFormData] = useState(EMPTY_TASK_FORM);
+  const [taskFormError, setTaskFormError] = useState('');
+  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   useEffect(() => {
     const fetchProjectAndTasks = async () => {
@@ -96,6 +111,46 @@ const ProjectDetails = () => {
     }
   };
 
+  const closeTaskModal = () => {
+    setIsTaskModalOpen(false);
+    setTaskFormData(EMPTY_TASK_FORM);
+    setTaskFormError('');
+  };
+
+  const handleTaskChange = (e) => {
+    setTaskFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleCreateTask = async (e) => {
+    e.preventDefault();
+
+    if (!taskFormData.title.trim()) {
+      setTaskFormError('Task title is required');
+      return;
+    }
+
+    try {
+      setTaskFormError('');
+      setIsSubmittingTask(true);
+
+      const response = await api.post(`/projects/${id}/tasks`, {
+        title: taskFormData.title.trim(),
+        description: taskFormData.description.trim() || null,
+        status: taskFormData.status,
+        priority: taskFormData.priority,
+        due_date: taskFormData.due_date || null,
+      });
+
+      setTasks((prev) => [response.data, ...prev]);
+      closeTaskModal();
+    } catch (err) {
+      const apiMessage = err.response?.data?.message;
+      setTaskFormError(apiMessage || 'Unable to create task right now');
+    } finally {
+      setIsSubmittingTask(false);
+    }
+  };
+
   const renderMoveButtons = (task) => {
     const moveTargets = KANBAN_COLUMNS.filter((column) => column.key !== task.status);
 
@@ -140,9 +195,18 @@ const ProjectDetails = () => {
           <h2>{project?.title}</h2>
           <p>{project?.description || 'No project description yet.'}</p>
         </div>
-        <span className='project-status'>
-          {project?.status || 'active'}
-        </span>
+        <div className='project-header-right'>
+          <span className='project-status'>
+            {project?.status || 'active'}
+          </span>
+          <button
+            type='button'
+            className='primary-btn'
+            onClick={() => setIsTaskModalOpen(true)}
+          >
+            New Task
+          </button>
+        </div>
       </header>
 
       {error && <p className='project-state error'>{error}</p>}
@@ -174,6 +238,89 @@ const ProjectDetails = () => {
           </section>
         ))}
       </div>
+
+      {isTaskModalOpen && (
+        <div className='modal-overlay' role='presentation' onClick={closeTaskModal}>
+          <div
+            className='modal-card'
+            role='dialog'
+            aria-modal='true'
+            aria-label='Create task form'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>New Task</h3>
+            <form onSubmit={handleCreateTask} className='project-form'>
+              {taskFormError && <p className='form-error'>{taskFormError}</p>}
+
+              <label htmlFor='task-title'>Title</label>
+              <input
+                id='task-title'
+                name='title'
+                type='text'
+                value={taskFormData.title}
+                onChange={handleTaskChange}
+                placeholder='Task title'
+              />
+
+              <label htmlFor='task-description'>Description</label>
+              <textarea
+                id='task-description'
+                name='description'
+                value={taskFormData.description}
+                onChange={handleTaskChange}
+                placeholder='Describe this task'
+                rows={3}
+              />
+
+              <label htmlFor='task-status'>Status</label>
+              <select
+                id='task-status'
+                name='status'
+                value={taskFormData.status}
+                onChange={handleTaskChange}
+              >
+                {KANBAN_COLUMNS.map((col) => (
+                  <option key={col.key} value={col.key}>
+                    {col.label}
+                  </option>
+                ))}
+              </select>
+
+              <label htmlFor='task-priority'>Priority</label>
+              <select
+                id='task-priority'
+                name='priority'
+                value={taskFormData.priority}
+                onChange={handleTaskChange}
+              >
+                {PRIORITY_OPTIONS.map((p) => (
+                  <option key={p} value={p}>
+                    {p.charAt(0).toUpperCase() + p.slice(1)}
+                  </option>
+                ))}
+              </select>
+
+              <label htmlFor='task-due-date'>Due Date</label>
+              <input
+                id='task-due-date'
+                name='due_date'
+                type='date'
+                value={taskFormData.due_date}
+                onChange={handleTaskChange}
+              />
+
+              <div className='modal-actions'>
+                <button type='button' className='ghost-btn' onClick={closeTaskModal}>
+                  Cancel
+                </button>
+                <button type='submit' className='primary-btn' disabled={isSubmittingTask}>
+                  {isSubmittingTask ? 'Adding...' : 'Add Task'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

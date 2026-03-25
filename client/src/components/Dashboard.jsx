@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -44,8 +45,20 @@ const Dashboard = () => {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingProject(null);
     setFormError('');
     setFormData({ title: '', description: '', status: 'active' });
+  };
+
+  const openEditModal = (project) => {
+    setEditingProject(project);
+    setFormData({
+      title: project.title,
+      description: project.description || '',
+      status: project.status,
+    });
+    setFormError('');
+    setIsModalOpen(true);
   };
 
   const handleCreateProject = async (e) => {
@@ -82,6 +95,36 @@ const Dashboard = () => {
     }
   };
 
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+
+    if (!formData.title.trim()) {
+      setFormError('Project title is required');
+      return;
+    }
+
+    try {
+      setFormError('');
+      setIsSubmitting(true);
+
+      const response = await api.put(`/projects/${editingProject.id}`, {
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        status: formData.status,
+      });
+
+      setProjects((prev) =>
+        prev.map((p) => (p.id === editingProject.id ? response.data : p))
+      );
+      closeModal();
+    } catch (err) {
+      const apiMessage = err.response?.data?.message;
+      setFormError(apiMessage || 'Unable to update project right now');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section className='dashboard'>
       <header className='dashboard-header'>
@@ -106,7 +149,17 @@ const Dashboard = () => {
               <article key={project.id} className='project-card'>
                 <div className='project-card-head'>
                   <h3>{project.title}</h3>
-                  <span className={`status-chip status-${project.status}`}>{project.status}</span>
+                  <div className='project-card-head-right'>
+                    <span className={`status-chip status-${project.status}`}>{project.status}</span>
+                    <button
+                      type='button'
+                      className='icon-btn'
+                      aria-label={`Edit ${project.title}`}
+                      onClick={() => openEditModal(project)}
+                    >
+                      ✏️
+                    </button>
+                  </div>
                 </div>
                 <p>{project.description || 'No description yet.'}</p>
                 <Link className='project-link' to={`/projects/${project.id}`}>
@@ -124,11 +177,11 @@ const Dashboard = () => {
             className='modal-card'
             role='dialog'
             aria-modal='true'
-            aria-label='Create project form'
+            aria-label={editingProject ? 'Edit project form' : 'Create project form'}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>Create Project</h3>
-            <form onSubmit={handleCreateProject} className='project-form'>
+            <h3>{editingProject ? 'Edit Project' : 'Create Project'}</h3>
+            <form onSubmit={editingProject ? handleUpdateProject : handleCreateProject} className='project-form'>
               {formError && <p className='error'>{formError}</p>}
               <label htmlFor='title'>Title</label>
               <input
@@ -164,7 +217,9 @@ const Dashboard = () => {
                   Cancel
                 </button>
                 <button type='submit' className='primary-btn' disabled={isSubmitting}>
-                  {isSubmitting ? 'Creating...' : 'Create'}
+                  {isSubmitting
+                    ? editingProject ? 'Saving...' : 'Creating...'
+                    : editingProject ? 'Save Changes' : 'Create'}
                 </button>
               </div>
             </form>

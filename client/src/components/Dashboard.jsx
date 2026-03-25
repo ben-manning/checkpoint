@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import api from '../api/axios.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
+  const toast = useToast();
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,7 +22,6 @@ const Dashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
 
   const statusOptions = useMemo(() => ['active', 'on-hold', 'completed'], []);
 
@@ -89,10 +90,11 @@ const Dashboard = () => {
       });
 
       setProjects((prev) => [response.data, ...prev]);
+      toast.success('Project created');
       closeModal();
     } catch (err) {
       const apiMessage = err.response?.data?.message;
-      setFormError(apiMessage || 'Unable to create project right now');
+      toast.error(apiMessage || 'Unable to create project right now');
     } finally {
       setIsSubmitting(false);
     }
@@ -100,25 +102,24 @@ const Dashboard = () => {
 
   const openDeleteConfirm = (project) => {
     setConfirmDelete(project);
-    setDeleteError('');
   };
 
   const closeDeleteConfirm = () => {
     if (isDeleting) return;
     setConfirmDelete(null);
-    setDeleteError('');
   };
 
   const handleDeleteProject = async () => {
     try {
-      setDeleteError('');
       setIsDeleting(true);
       await api.delete(`/projects/${confirmDelete.id}`);
       setProjects((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+      toast.success('Project deleted');
       setConfirmDelete(null);
     } catch (err) {
       const apiMessage = err.response?.data?.message;
-      setDeleteError(apiMessage || 'Unable to delete project right now');
+      toast.error(apiMessage || 'Unable to delete project right now');
+      setConfirmDelete(null);
     } finally {
       setIsDeleting(false);
     }
@@ -145,10 +146,11 @@ const Dashboard = () => {
       setProjects((prev) =>
         prev.map((p) => (p.id === editingProject.id ? response.data : p))
       );
+      toast.success('Project saved');
       closeModal();
     } catch (err) {
       const apiMessage = err.response?.data?.message;
-      setFormError(apiMessage || 'Unable to update project right now');
+      toast.error(apiMessage || 'Unable to update project right now');
     } finally {
       setIsSubmitting(false);
     }
@@ -254,15 +256,18 @@ const Dashboard = () => {
                   Cancel
                 </button>
                 <button type='submit' className='primary-btn' disabled={isSubmitting}>
-                  {isSubmitting
-                    ? editingProject ? 'Saving...' : 'Creating...'
-                    : editingProject ? 'Save Changes' : 'Create'}
+                  {isSubmitting ? (
+                    <><span className='spinner' />{editingProject ? 'Saving...' : 'Creating...'}</>
+                  ) : (
+                    editingProject ? 'Save Changes' : 'Create'
+                  )}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
       {confirmDelete && (
         <div className='modal-overlay' role='presentation' onClick={closeDeleteConfirm}>
           <div
@@ -277,13 +282,12 @@ const Dashboard = () => {
               Are you sure you want to delete <strong>{confirmDelete.title}</strong>? This cannot be
               undone.
             </p>
-            {deleteError && <p className='error'>{deleteError}</p>}
             <div className='modal-actions'>
               <button type='button' className='ghost-btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
                 Cancel
               </button>
               <button type='button' className='danger-btn' onClick={handleDeleteProject} disabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? <><span className='spinner' />Deleting...</> : 'Delete'}
               </button>
             </div>
           </div>

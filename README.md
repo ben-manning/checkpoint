@@ -1,10 +1,15 @@
+
 # 🗂️ PERN Project Management App
 
 A full-stack project management application built with PostgreSQL, Express, React, and Node.js.
 
+---
+
 ## 🚀 Live Demo
-- **Frontend:** _coming soon_
-- **Backend API:** _coming soon_
+- **Frontend:** https://checkpoint-hazel.vercel.app/
+- **Backend API:** https://checkpoint-backend-83z1.onrender.com/
+
+---
 
 ## 🛠️ Tech Stack
 - **Database:** PostgreSQL
@@ -14,53 +19,37 @@ A full-stack project management application built with PostgreSQL, Express, Reac
 
 ---
 
-## 📅 Sprint Schedule (Mar 15–21, 2026)
-
-| Day | Date | Focus |
-|-----|------|-------|
-| 1 | Mar 15 | Setup & Database |
-| 2 | Mar 16 | Express Backend CRUD |
-| 3 | Mar 17 | Authentication |
-| 4 | Mar 18 | React Scaffold & Auth UI |
-| 5 | Mar 19 | Core UI Features |
-| 6 | Mar 20 | Polish & Error Handling |
-| 7 | Mar 21 | Deploy |
-
----
-
 ## 🗃️ Database Schema
 
-```sql
--- Users
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(150) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Projects
-CREATE TABLE projects (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  title VARCHAR(200) NOT NULL,
-  description TEXT,
-  status VARCHAR(50) DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Tasks
-CREATE TABLE tasks (
-  id SERIAL PRIMARY KEY,
-  project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
-  title VARCHAR(200) NOT NULL,
-  description TEXT,
-  status VARCHAR(50) DEFAULT 'todo',
-  priority VARCHAR(50) DEFAULT 'medium',
-  due_date DATE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+```mermaid
+erDiagram
+  USERS {
+    INT id PK
+    VARCHAR name
+    VARCHAR email
+    TEXT password_hash
+    TIMESTAMP created_at
+  }
+  PROJECTS {
+    INT id PK
+    INT user_id FK
+    VARCHAR title
+    TEXT description
+    VARCHAR status
+    TIMESTAMP created_at
+  }
+  TASKS {
+    INT id PK
+    INT project_id FK
+    VARCHAR title
+    TEXT description
+    VARCHAR status
+    VARCHAR priority
+    DATE due_date
+    TIMESTAMP created_at
+  }
+  USERS ||--o{ PROJECTS : owns
+  PROJECTS ||--o{ TASKS : contains
 ```
 
 ---
@@ -121,12 +110,15 @@ npm run dev
 ```
 DATABASE_URL=postgresql://localhost:5432/pern_pm
 PORT=5000
-JWT_SECRET=your_secret_here
+JWT_SECRET=your_secret_key_here
+CLIENT_URL=http://localhost:5173
+VERCEL_FRONTEND_URL=https://checkpoint-hazel.vercel.app/
+ALLOWED_ORIGINS=https://checkpoint-hazel.vercel.app/
 ```
 
 **client/.env**
 ```
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5001
 ```
 
 ---
@@ -134,12 +126,12 @@ VITE_API_URL=http://localhost:5000
 ## 📁 Project Structure
 
 ```
-pern-pm/
+checkpoint/
 ├── client/                  # React frontend (Vite)
 │   ├── src/
 │   │   ├── components/
 │   │   ├── context/
-│   │   ├── pages/
+│   │   ├── api/
 │   │   └── main.jsx
 │   └── package.json
 ├── server/                  # Express backend
@@ -147,8 +139,30 @@ pern-pm/
 │   ├── middleware/
 │   ├── routes/
 │   ├── db/
-│   │   └── index.js
-│   ├── app.js
+│   │   ├── index.js
+│   │   └── schema.sql
+│   └── app.js
+```
+
+---
+
+## 🌐 Deployment
+
+### Backend (Render)
+- Deploy from GitHub, set root to `server/`
+- Add all environment variables from `.env.example` in Render dashboard
+- Live URL: https://checkpoint-backend-83z1.onrender.com/
+
+### Frontend (Vercel)
+- Deploy from GitHub, set root to `client/`
+- Add `VITE_API_URL` in Vercel dashboard (point to Render backend)
+- Live URL: https://checkpoint-hazel.vercel.app/
+
+---
+
+## 📝 License
+
+MIT
 │   └── package.json
 └── README.md
 ```

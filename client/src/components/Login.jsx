@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router';
+import api from '../api/axios.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const Login = () => {
@@ -9,8 +9,6 @@ const Login = () => {
   const location = useLocation();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const from = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (e) => {
@@ -22,7 +20,7 @@ const Login = () => {
 
     try {
       setError('');
-      const response = await axios.post(`${apiBaseUrl}/api/auth/login`, formData);
+      const response = await api.post('/auth/login', formData);
       login(response.data);
       navigate(from, { replace: true });
     } catch (err) {

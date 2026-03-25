@@ -1,4 +1,5 @@
 import { createContext, useState, useContext } from 'react';
+import { setAuthToken } from '../api/axios.js';
 const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
@@ -9,6 +10,7 @@ const AuthProvider = ({ children }) => {
     if (user && jwtToken) {
       setCurrentUser(user);
       setToken(jwtToken);
+      setAuthToken(jwtToken);
     }
   }
 
@@ -16,15 +18,12 @@ const AuthProvider = ({ children }) => {
     if (currentUser || token) {
       setCurrentUser(null);
       setToken(null);
+      setAuthToken(null);
     }
   }
 
-  const getAuthHeaders = () => (
-    token ? { Authorization: `Bearer ${token}` } : {}
-  );
-
   return (
-    <AuthContext value={{ currentUser, token, login, logout, getAuthHeaders }}>
+    <AuthContext value={{ currentUser, token, login, logout }}>
       { children }
     </AuthContext>
   )

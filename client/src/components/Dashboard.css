@@ -46,6 +46,29 @@
   gap: 0.5rem;
 }
 
+.project-card-head-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.15rem 0.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.icon-btn:hover {
+  opacity: 1;
+}
+
 .project-card h3 {
   margin: 0;
   font-size: 1.1rem;

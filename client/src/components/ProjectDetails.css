@@ -149,6 +149,106 @@
   cursor: not-allowed;
 }
 
+.project-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Modal (mirrors Dashboard modal styles) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 999;
+}
+
+.modal-card {
+  width: min(560px, 100%);
+  background: var(--bg);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 1.2rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
+}
+
+.modal-card h3 {
+  margin-top: 0;
+}
+
+.project-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.project-form input,
+.project-form textarea,
+.project-form select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.project-form input:focus,
+.project-form textarea:focus,
+.project-form select:focus {
+  outline: 2px solid #0f766e;
+  outline-offset: 1px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.primary-btn,
+.ghost-btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.62rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.primary-btn {
+  background: #0f766e;
+  color: #fff;
+}
+
+.primary-btn:hover,
+.ghost-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--text-h);
+  border-color: var(--border);
+}
+
+.form-error {
+  color: #bf0f2f;
+  margin: 0;
+}
+
 @media (max-width: 1024px) {
   .kanban-grid {
     grid-template-columns: 1fr;

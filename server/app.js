@@ -15,12 +15,19 @@ require('./db');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const parseOrigins = (value) =>
+  (value || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
 const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.VERCEL_FRONTEND_URL,
+  ...parseOrigins(process.env.CLIENT_URL),
+  ...parseOrigins(process.env.VERCEL_FRONTEND_URL),
+  ...parseOrigins(process.env.ALLOWED_ORIGINS),
   'http://localhost:5173',
   'http://localhost:3000',
-].filter(Boolean);
+];
 
 app.use(
   cors({

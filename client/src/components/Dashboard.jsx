@@ -4,6 +4,7 @@ import api from '../api/axios.js';
 import { useAuth } from '../context/useAuth.jsx';
 import { useToast } from '../context/useToast.jsx';
 import './Dashboard.css';
+import '../styles/shared.css';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
@@ -156,17 +157,17 @@ const Dashboard = () => {
     }
   };
 
-  return (
-    <section className='dashboard'>
-      <header className='dashboard-header'>
-        <div>
-          <h2>Projects</h2>
-          <p>Track your work with a fast overview of each project.</p>
-        </div>
-        <button type='button' className='primary-btn' onClick={() => setIsModalOpen(true)}>
-          New Project
-        </button>
-      </header>
+      return (
+      <section className='container'>
+        <header className='header'>
+          <div>
+            <h2>Projects</h2>
+            <p>Track your work with a fast overview of each project.</p>
+          </div>
+          <button type='button' className='btn btn-primary' onClick={() => setIsModalOpen(true)}>
+            New Project
+          </button>
+        </header>
 
       {isLoading && <p className='dashboard-state'>Loading projects...</p>}
       {!isLoading && error && <p className='dashboard-state error'>{error}</p>}
@@ -192,7 +193,7 @@ const Dashboard = () => {
                     </button>
                     <button
                       type='button'
-                      className='icon-btn icon-btn-danger'
+                      className='btn btn-danger'
                       aria-label={`Delete ${project.title}`}
                       onClick={() => openDeleteConfirm(project)}
                     >
@@ -201,7 +202,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <p>{project.description || 'No description yet.'}</p>
-                <Link className='project-link' to={`/projects/${project.id}`}>
+                <Link className='link' to={`/projects/${project.id}`}>
                   Open Board
                 </Link>
               </article>
@@ -252,10 +253,10 @@ const Dashboard = () => {
               </select>
 
               <div className='modal-actions'>
-                <button type='button' className='ghost-btn' onClick={closeModal}>
+                <button type='button' className='btn' onClick={closeModal}>
                   Cancel
                 </button>
-                <button type='submit' className='primary-btn' disabled={isSubmitting}>
+                <button type='submit' className='btn btn-primary' disabled={isSubmitting}>
                   {isSubmitting ? (
                     <><span className='spinner' />{editingProject ? 'Saving...' : 'Creating...'}</>
                   ) : (
@@ -283,10 +284,10 @@ const Dashboard = () => {
               undone.
             </p>
             <div className='modal-actions'>
-              <button type='button' className='ghost-btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
+              <button type='button' className='btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
                 Cancel
               </button>
-              <button type='button' className='danger-btn' onClick={handleDeleteProject} disabled={isDeleting}>
+              <button type='button' className='btn btn-danger' onClick={handleDeleteProject} disabled={isDeleting}>
                 {isDeleting ? <><span className='spinner' />Deleting...</> : 'Delete'}
               </button>
             </div>

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router';
 import api from '../api/axios.js';
 import { useToast } from '../context/useToast.jsx';
 import './ProjectDetails.css';
+import '../styles/shared.css';
 
 const KANBAN_COLUMNS = [
   { key: 'todo', label: 'To Do' },
@@ -207,9 +208,9 @@ const ProjectDetails = () => {
 
   if (error && !project) {
     return (
-      <section className='project-page'>
+      <section className='container'>
         <p className='project-state error'>{error}</p>
-        <Link to='/dashboard' className='back-link'>
+        <Link to='/dashboard' className='link'>
           Back to Dashboard
         </Link>
       </section>
@@ -217,10 +218,10 @@ const ProjectDetails = () => {
   }
 
   return (
-    <section className='project-page'>
-      <header className='project-header'>
+    <section className='container'>
+      <header className='header'>
         <div>
-          <Link to='/dashboard' className='back-link'>
+          <Link to='/dashboard' className='link'>
             Back to Dashboard
           </Link>
           <h2>{project?.title}</h2>
@@ -232,7 +233,7 @@ const ProjectDetails = () => {
           </span>
           <button
             type='button'
-            className='primary-btn'
+            className='btn btn-primary'
             onClick={() => setIsTaskModalOpen(true)}
           >
             New Task
@@ -260,7 +261,7 @@ const ProjectDetails = () => {
                       <h4>{task.title}</h4>
                       <button
                         type='button'
-                        className='icon-btn icon-btn-danger'
+                        className='btn btn-danger'
                         aria-label={`Delete ${task.title}`}
                         onClick={() => openDeleteConfirm(task)}
                       >
@@ -351,10 +352,10 @@ const ProjectDetails = () => {
               />
 
               <div className='modal-actions'>
-                <button type='button' className='ghost-btn' onClick={closeTaskModal}>
+                <button type='button' className='btn' onClick={closeTaskModal}>
                   Cancel
                 </button>
-                <button type='submit' className='primary-btn' disabled={isSubmittingTask}>
+                <button type='submit' className='btn btn-primary' disabled={isSubmittingTask}>
                   {isSubmittingTask ? <><span className='spinner' />Adding...</> : 'Add Task'}
                 </button>
               </div>
@@ -378,10 +379,10 @@ const ProjectDetails = () => {
               undone.
             </p>
             <div className='modal-actions'>
-              <button type='button' className='ghost-btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
+              <button type='button' className='btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
                 Cancel
               </button>
-              <button type='button' className='danger-btn' onClick={handleDeleteTask} disabled={isDeleting}>
+              <button type='button' className='btn btn-danger' onClick={handleDeleteTask} disabled={isDeleting}>
                 {isDeleting ? <><span className='spinner' />Deleting...</> : 'Delete'}
               </button>
             </div>

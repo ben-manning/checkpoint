@@ -1,0 +1,112 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  margin-bottom: 2rem;
+}
+
+.navbar .nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navbar .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar a, .navbar button {
+  color: var(--text);
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 500;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+}
+
+.navbar a.active, .navbar a:hover, .navbar button:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.navbar .user {
+  font-size: 0.97rem;
+  color: var(--text-h);
+  margin-right: 0.7rem;
+}
+
+.btn, .btn-primary, .btn-danger {
+  display: inline-block;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.55rem 1.2rem;
+  font-size: 1rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-border);
+}
+
+.btn-primary:hover {
+  background: #7c22c9;
+}
+
+.btn-danger {
+  background: #bf0f2f;
+  color: #fff;
+  border-color: #bf0f2f;
+}
+
+.btn-danger:hover {
+  background: #a10c24;
+}
+
+.link {
+  color: #0f766e;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.container {
+  width: min(1100px, 94%);
+  margin: 2rem auto 3rem;
+  text-align: left;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.header h2 {
+  margin: 0;
+}
+
+.header p {
+  margin-top: 0.5rem;
+  color: var(--text);
+}

@@ -9,6 +9,7 @@ import { useAuth } from './context/useAuth.jsx';
 import { setOnUnauthorized } from './api/axios.js';
 import Nav from './components/Nav.jsx';
 import './App.css'
+import './styles/shared.css'
 
 const PrivateRoute = ({ isAuthenticated, children }) => {
   const location = useLocation();

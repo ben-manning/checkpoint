@@ -1,6 +1,6 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState } from 'react';
 import { setAuthToken } from '../api/axios.js';
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -28,6 +28,4 @@ const AuthProvider = ({ children }) => {
     </AuthContext>
   )
 }
-
-export const useAuth = () => useContext(AuthContext);
 export default AuthProvider;

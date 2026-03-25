@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/useAuth.jsx';
 
 const Nav = () => {
   const { currentUser, logout } = useAuth();

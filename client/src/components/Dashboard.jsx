@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import api from '../api/axios.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import { useToast } from '../context/ToastContext.jsx';
+import { useAuth } from '../context/useAuth.jsx';
+import { useToast } from '../context/useToast.jsx';
 import './Dashboard.css';
 
 const Dashboard = () => {

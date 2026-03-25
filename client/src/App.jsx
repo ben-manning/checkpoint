@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
-import { useAuth } from './context/AuthContext.jsx';
+import { useAuth } from './context/useAuth.jsx';
 import { setOnUnauthorized } from './api/axios.js';
 import Nav from './components/Nav.jsx';
 import './App.css'

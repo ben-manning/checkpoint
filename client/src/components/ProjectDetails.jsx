@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import api from '../api/axios.js';
-import { useToast } from '../context/ToastContext.jsx';
+import { useToast } from '../context/useToast.jsx';
 import './ProjectDetails.css';
 
 const KANBAN_COLUMNS = [

@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router';
 import Home from './components/Home.jsx';
 import Dashboard from './components/Dashboard.jsx';
+import ProjectDetails from './components/ProjectDetails.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import { useAuth } from './context/AuthContext.jsx';
@@ -33,6 +34,14 @@ function App() {
               <Dashboard />
             </PrivateRoute>
           } 
+        />
+        <Route
+          path='/projects/:id'
+          element={
+            <PrivateRoute isAuthenticated={currentUser}>
+              <ProjectDetails />
+            </PrivateRoute>
+          }
         />
       </Routes>
     </>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import api from '../api/axios.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import './Dashboard.css';
@@ -108,6 +109,9 @@ const Dashboard = () => {
                   <span className={`status-chip status-${project.status}`}>{project.status}</span>
                 </div>
                 <p>{project.description || 'No description yet.'}</p>
+                <Link className='project-link' to={`/projects/${project.id}`}>
+                  Open Board
+                </Link>
               </article>
             ))
           )}

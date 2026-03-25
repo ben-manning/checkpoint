@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import api from '../api/axios.js';
+import { useToast } from '../context/ToastContext.jsx';
 import './ProjectDetails.css';
 
 const KANBAN_COLUMNS = [
@@ -27,6 +28,7 @@ const EMPTY_TASK_FORM = {
 
 const ProjectDetails = () => {
   const { id } = useParams();
+  const toast = useToast();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +41,6 @@ const ProjectDetails = () => {
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     const fetchProjectAndTasks = async () => {
@@ -108,7 +109,7 @@ const ProjectDetails = () => {
         )
       );
       const apiMessage = err.response?.data?.message;
-      setError(apiMessage || 'Unable to move task');
+      toast.error(apiMessage || 'Unable to move task');
     } finally {
       setMovingTaskId(null);
     }
@@ -122,25 +123,24 @@ const ProjectDetails = () => {
 
   const openDeleteConfirm = (task) => {
     setConfirmDelete(task);
-    setDeleteError('');
   };
 
   const closeDeleteConfirm = () => {
     if (isDeleting) return;
     setConfirmDelete(null);
-    setDeleteError('');
   };
 
   const handleDeleteTask = async () => {
     try {
-      setDeleteError('');
       setIsDeleting(true);
       await api.delete(`/tasks/${confirmDelete.id}`);
       setTasks((prev) => prev.filter((t) => t.id !== confirmDelete.id));
+      toast.success('Task deleted');
       setConfirmDelete(null);
     } catch (err) {
       const apiMessage = err.response?.data?.message;
-      setDeleteError(apiMessage || 'Unable to delete task right now');
+      toast.error(apiMessage || 'Unable to delete task right now');
+      setConfirmDelete(null);
     } finally {
       setIsDeleting(false);
     }
@@ -171,10 +171,11 @@ const ProjectDetails = () => {
       });
 
       setTasks((prev) => [response.data, ...prev]);
+      toast.success('Task added');
       closeTaskModal();
     } catch (err) {
       const apiMessage = err.response?.data?.message;
-      setTaskFormError(apiMessage || 'Unable to create task right now');
+      toast.error(apiMessage || 'Unable to create task right now');
     } finally {
       setIsSubmittingTask(false);
     }
@@ -192,6 +193,7 @@ const ProjectDetails = () => {
             onClick={() => moveTaskTo(task, target.key)}
             disabled={movingTaskId === task.id}
           >
+            {movingTaskId === task.id ? <span className='spinner' /> : null}
             Move to {target.label}
           </button>
         ))}
@@ -353,13 +355,14 @@ const ProjectDetails = () => {
                   Cancel
                 </button>
                 <button type='submit' className='primary-btn' disabled={isSubmittingTask}>
-                  {isSubmittingTask ? 'Adding...' : 'Add Task'}
+                  {isSubmittingTask ? <><span className='spinner' />Adding...</> : 'Add Task'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
       {confirmDelete && (
         <div className='modal-overlay' role='presentation' onClick={closeDeleteConfirm}>
           <div
@@ -374,13 +377,12 @@ const ProjectDetails = () => {
               Are you sure you want to delete <strong>{confirmDelete.title}</strong>? This cannot be
               undone.
             </p>
-            {deleteError && <p className='form-error'>{deleteError}</p>}
             <div className='modal-actions'>
               <button type='button' className='ghost-btn' onClick={closeDeleteConfirm} disabled={isDeleting}>
                 Cancel
               </button>
               <button type='button' className='danger-btn' onClick={handleDeleteTask} disabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? <><span className='spinner' />Deleting...</> : 'Delete'}
               </button>
             </div>
           </div>

@@ -1,10 +1,12 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router';
 import Home from './components/Home.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import { setOnUnauthorized } from './api/axios.js';
 import Nav from './components/Nav.jsx';
 import './App.css'
 
@@ -19,7 +21,16 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 };
 
 function App() {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      logout();
+      navigate('/login', { replace: true });
+    });
+  }, [logout, navigate]);
+
   return (
     <>
       <Nav />

@@ -69,6 +69,32 @@
   opacity: 1;
 }
 
+.icon-btn-danger:hover {
+  opacity: 1;
+  color: #bf0f2f;
+}
+
+.danger-btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.62rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  background: #bf0f2f;
+  color: #fff;
+}
+
+.danger-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.danger-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .project-card h3 {
   margin: 0;
   font-size: 1.1rem;

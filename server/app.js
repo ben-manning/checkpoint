@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes');
 const healthRoutes = require('./routes/healthRoutes');
@@ -58,7 +57,6 @@ app.use((req, res, next) => {
   return res.status(403).json({ message: 'CORS origin not allowed' });
 });
 
-app.use(cors({ credentials: true }));
 app.use(express.json());
 
 app.use('/api', healthRoutes);
@@ -69,8 +67,10 @@ app.use('/api/tasks', verifyToken, tasksRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
 module.exports = app;

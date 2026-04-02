@@ -1,8 +1,9 @@
 const pool = require('../db');
 
-const findProjectById = async (projectId) => {
-  const result = await pool.query('SELECT id FROM projects WHERE id = $1', [
+const findProjectByIdAndUser = async (projectId, userId) => {
+  const result = await pool.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [
     projectId,
+    userId,
   ]);
 
   return result.rowCount > 0;
@@ -11,7 +12,8 @@ const findProjectById = async (projectId) => {
 const getTasksByProjectId = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const projectExists = await findProjectById(id);
+    const userId = req.user.userId;
+    const projectExists = await findProjectByIdAndUser(id, userId);
 
     if (!projectExists) {
       return res.status(404).json({ message: 'Project not found' });
@@ -42,7 +44,8 @@ const createTask = async (req, res, next) => {
       });
     }
 
-    const projectExists = await findProjectById(id);
+    const userId = req.user.userId;
+    const projectExists = await findProjectByIdAndUser(id, userId);
 
     if (!projectExists) {
       return res.status(404).json({ message: 'Project not found' });
@@ -64,6 +67,7 @@ const createTask = async (req, res, next) => {
 const updateTask = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
     const { title, description, status, priority, due_date } = req.body;
 
     const result = await pool.query(
@@ -74,8 +78,9 @@ const updateTask = async (req, res, next) => {
            priority = COALESCE($5, priority),
            due_date = COALESCE($6, due_date)
        WHERE id = $1
+         AND project_id IN (SELECT id FROM projects WHERE user_id = $7)
        RETURNING id, project_id, title, description, status, priority, due_date, created_at`,
-      [id, title || null, description || null, status || null, priority || null, due_date || null]
+      [id, title || null, description || null, status || null, priority || null, due_date || null, userId]
     );
 
     if (result.rowCount === 0) {
@@ -91,9 +96,11 @@ const updateTask = async (req, res, next) => {
 const deleteTask = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM tasks WHERE id = $1 RETURNING id', [
-      id,
-    ]);
+    const userId = req.user.userId;
+    const result = await pool.query(
+      'DELETE FROM tasks WHERE id = $1 AND project_id IN (SELECT id FROM projects WHERE user_id = $2) RETURNING id',
+      [id, userId]
+    );
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'Task not found' });

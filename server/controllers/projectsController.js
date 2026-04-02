@@ -1,10 +1,11 @@
 const pool = require('../db');
 
 const getProjects = async (req, res, next) => {
-  let userId = req.user.userId;
+  const userId = req.user.userId;
   try {
     const result = await pool.query(
-      `SELECT id, user_id, title, description, status, created_at FROM projects WHERE user_id=${userId} ORDER BY created_at DESC`
+      'SELECT id, user_id, title, description, status, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
     );
 
     res.status(200).json(result.rows);
@@ -16,9 +17,10 @@ const getProjects = async (req, res, next) => {
 const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
     const result = await pool.query(
-      'SELECT id, user_id, title, description, status, created_at FROM projects WHERE id = $1',
-      [id]
+      'SELECT id, user_id, title, description, status, created_at FROM projects WHERE id = $1 AND user_id = $2',
+      [id, userId]
     );
 
     if (result.rowCount === 0) {
@@ -33,11 +35,12 @@ const getProjectById = async (req, res, next) => {
 
 const createProject = async (req, res, next) => {
   try {
-    const { user_id, title, description, status } = req.body;
+    const userId = req.user.userId;
+    const { title, description, status } = req.body;
 
-    if (!user_id || !title) {
+    if (!title) {
       return res.status(400).json({
-        message: 'user_id and title are required',
+        message: 'title is required',
       });
     }
 
@@ -45,7 +48,7 @@ const createProject = async (req, res, next) => {
       `INSERT INTO projects (user_id, title, description, status)
        VALUES ($1, $2, $3, COALESCE($4, 'active'))
        RETURNING id, user_id, title, description, status, created_at`,
-      [user_id, title, description || null, status || null]
+      [userId, title, description || null, status || null]
     );
 
     return res.status(201).json(result.rows[0]);
@@ -57,6 +60,7 @@ const createProject = async (req, res, next) => {
 const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
     const { title, description, status } = req.body;
 
     const result = await pool.query(
@@ -64,9 +68,9 @@ const updateProject = async (req, res, next) => {
        SET title = COALESCE($2, title),
            description = COALESCE($3, description),
            status = COALESCE($4, status)
-       WHERE id = $1
+       WHERE id = $1 AND user_id = $5
        RETURNING id, user_id, title, description, status, created_at`,
-      [id, title || null, description || null, status || null]
+      [id, title || null, description || null, status || null, userId]
     );
 
     if (result.rowCount === 0) {
@@ -83,9 +87,10 @@ const deleteProject = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    const userId = req.user.userId;
     const result = await pool.query(
-      'DELETE FROM projects WHERE id = $1 RETURNING id',
-      [id]
+      'DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING id',
+      [id, userId]
     );
 
     if (result.rowCount === 0) {

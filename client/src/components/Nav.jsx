@@ -1,7 +1,8 @@
 
-import { NavLink, useNavigate } from 'react-router';
+import { Link, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '../context/useAuth.jsx';
 import '../styles/shared.css';
+import checkpointNavbarLogo from '../assets/checkpoint-icons/checkpoint-navbar.svg';
 
 const Nav = () => {
   const { currentUser, logout } = useAuth();
@@ -15,9 +16,9 @@ const Nav = () => {
   return (
     <nav className="navbar">
       <div className="nav-left">
-        <NavLink to="/" className={({ isActive }) => isActive ? 'active' : ''}>
-          Home
-        </NavLink>
+        <Link to="/" className="navbar-home-link" aria-label="Home">
+          <img className="navbar-home-logo" src={checkpointNavbarLogo} alt="Checkpoint home" />
+        </Link>
         {currentUser && (
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
             Dashboard

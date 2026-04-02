@@ -39,6 +39,24 @@
   color: var(--accent);
 }
 
+.navbar-home-logo {
+  display: block;
+  height: 1.9rem;
+  width: auto;
+}
+
+.navbar .navbar-home-link {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.navbar .navbar-home-link:hover,
+.navbar .navbar-home-link.active {
+  background: transparent;
+  color: inherit;
+}
+
 .navbar .user {
   font-size: 0.97rem;
   color: var(--text-h);

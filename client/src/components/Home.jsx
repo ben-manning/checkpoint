@@ -14,7 +14,7 @@ const Home = () => {
   }, [currentUser, navigate]);
   if (currentUser) return null;
   return (
-    <main>
+    <main className='home-page'>
       <section className='container home-hero'>
         <img src={checkpointLogo} alt='Checkpoint' className='home-hero-logo' />
         <h1>

@@ -71,7 +71,20 @@
   font-size: 1rem;
   border: 1px solid transparent;
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.15s, color 0.15s, border 0.15s;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+  text-decoration: none;
 }
 
 .btn-primary {

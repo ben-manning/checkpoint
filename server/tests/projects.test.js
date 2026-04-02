@@ -94,6 +94,31 @@ describe('Projects API', () => {
 
       await pool.query('DELETE FROM projects WHERE id = $1', [res.body.id]);
     });
+
+    it('should include created_at in the response', async () => {
+      const res = await request(app)
+        .post('/api/projects')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'Timestamped Project' });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty('created_at');
+      expect(new Date(res.body.created_at).getTime()).not.toBeNaN();
+
+      await pool.query('DELETE FROM projects WHERE id = $1', [res.body.id]);
+    });
+
+    it('should persist an explicitly provided status', async () => {
+      const res = await request(app)
+        .post('/api/projects')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'On Hold Project', status: 'on-hold' });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.status).toBe('on-hold');
+
+      await pool.query('DELETE FROM projects WHERE id = $1', [res.body.id]);
+    });
   });
 
   describe('GET /api/projects', () => {
@@ -184,6 +209,30 @@ describe('Projects API', () => {
         .send({ title: 'Ghost' });
 
       expect(res.statusCode).toBe(404);
+    });
+
+    it('should preserve title and status when updating only description', async () => {
+      const res = await request(app)
+        .put(`/api/projects/${projectId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ description: 'New description' });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.title).toBe('Updated Title');
+      expect(res.body.status).toBe('on-hold');
+      expect(res.body.description).toBe('New description');
+    });
+
+    it('should preserve title and description when updating only status', async () => {
+      const res = await request(app)
+        .put(`/api/projects/${projectId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ status: 'active' });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.title).toBe('Updated Title');
+      expect(res.body.description).toBe('New description');
+      expect(res.body.status).toBe('active');
     });
   });
 

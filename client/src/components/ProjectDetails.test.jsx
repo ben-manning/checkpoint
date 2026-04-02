@@ -283,4 +283,132 @@ describe('ProjectDetails', () => {
       expect(toast.error).toHaveBeenCalledWith('Unable to delete task right now');
     });
   });
+
+  it('shows "No description" for tasks with null or empty description', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Roadmap', status: 'active' } });
+      }
+      return Promise.resolve({
+        data: [{ id: 50, title: 'Silent Task', description: null, status: 'todo' }],
+      });
+    });
+
+    renderProjectDetails();
+
+    await screen.findByText('Silent Task');
+    expect(screen.getByText('No description')).toBeInTheDocument();
+  });
+
+  it('shows project description fallback when project has no description', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Bare Project', description: null, status: 'active' } });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    renderProjectDetails();
+
+    expect(await screen.findByText('No project description yet.')).toBeInTheDocument();
+  });
+
+  it('closes task creation modal when cancel button is clicked', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Roadmap', status: 'active' } });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    renderProjectDetails();
+
+    await screen.findByText('Roadmap');
+    fireEvent.click(screen.getByRole('button', { name: 'New Task' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('does not show a "Move to In Progress" button for a task already in In Progress', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Roadmap', status: 'active' } });
+      }
+      return Promise.resolve({
+        data: [{ id: 60, title: 'Already Moving', description: '', status: 'in_progress' }],
+      });
+    });
+
+    renderProjectDetails();
+
+    await screen.findByText('Already Moving');
+    expect(screen.queryByRole('button', { name: 'Move to In Progress' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Move to To Do' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Move to Done' })).toBeInTheDocument();
+  });
+
+  it('shows fallback error toast when move task fails without API message', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Roadmap', status: 'active' } });
+      }
+      return Promise.resolve({
+        data: [{ id: 61, title: 'Stuck Task', description: '', status: 'todo' }],
+      });
+    });
+    putMock.mockRejectedValueOnce({});
+
+    renderProjectDetails();
+
+    await screen.findByText('Stuck Task');
+    fireEvent.click(screen.getByRole('button', { name: 'Move to In Progress' }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Unable to move task');
+    });
+  });
+
+  it('shows API error message toast when delete task fails with message', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Roadmap', status: 'active' } });
+      }
+      return Promise.resolve({
+        data: [{ id: 62, title: 'Reject Delete', description: '', status: 'todo' }],
+      });
+    });
+    deleteMock.mockRejectedValueOnce({ response: { data: { message: 'Task already deleted' } } });
+
+    renderProjectDetails();
+
+    await screen.findByText('Reject Delete');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Reject Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Task already deleted');
+    });
+  });
+
+  it('closes delete confirm dialog when cancel button is clicked', async () => {
+    getMock.mockImplementation((url) => {
+      if (url === '/projects/42') {
+        return Promise.resolve({ data: { id: 42, title: 'Roadmap', status: 'active' } });
+      }
+      return Promise.resolve({
+        data: [{ id: 63, title: 'Keep Me', description: '', status: 'todo' }],
+      });
+    });
+
+    renderProjectDetails();
+
+    await screen.findByText('Keep Me');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Keep Me' }));
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
 });

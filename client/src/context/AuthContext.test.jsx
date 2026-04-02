@@ -80,4 +80,17 @@ describe('AuthProvider', () => {
     expect(screen.getByTestId('token')).toHaveTextContent('none');
     expect(setAuthTokenMock).not.toHaveBeenCalled();
   });
+
+  it('does not call setAuthToken when logging out while already logged out', () => {
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+
+    // Logout without ever logging in — the guard should prevent setAuthToken(null)
+    fireEvent.click(screen.getByText('do-logout'));
+
+    expect(setAuthTokenMock).not.toHaveBeenCalled();
+  });
 });

@@ -97,4 +97,27 @@ describe('App routing and auth guard', () => {
     expect(logoutMock).toHaveBeenCalledTimes(1);
     expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true });
   });
+
+  it('redirects unauthenticated users from /projects/:id to /login', async () => {
+    render(
+      <MemoryRouter initialEntries={['/projects/42']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Login Page')).toBeInTheDocument();
+    expect(screen.queryByText('Project Details Page')).not.toBeInTheDocument();
+  });
+
+  it('renders ProjectDetails for authenticated users at /projects/:id', async () => {
+    authState.currentUser = { id: 1, name: 'Test' };
+
+    render(
+      <MemoryRouter initialEntries={['/projects/42']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Project Details Page')).toBeInTheDocument();
+  });
 });

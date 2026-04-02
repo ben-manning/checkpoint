@@ -303,4 +303,149 @@ describe('Dashboard', () => {
       expect(toast.error).toHaveBeenCalledWith('Unable to delete project right now');
     });
   });
+
+  it('shows API error message in toast when create request fails with message', async () => {
+    getMock.mockResolvedValueOnce({ data: [] });
+    postMock.mockRejectedValueOnce({ response: { data: { message: 'Server rejected project' } } });
+
+    renderDashboard();
+
+    await screen.findByText('No projects yet. Create your first project.');
+    fireEvent.click(screen.getByRole('button', { name: 'New Project' }));
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Bad Project' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Server rejected project');
+    });
+  });
+
+  it('shows API error message in toast when update request fails with message', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 20, title: 'Old Title', description: 'desc', status: 'active' }],
+    });
+    putMock.mockRejectedValueOnce({ response: { data: { message: 'Update rejected' } } });
+
+    renderDashboard();
+
+    await screen.findByText('Old Title');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Old Title' }));
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New Title' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Update rejected');
+    });
+  });
+
+  it('shows API error message in toast when delete request fails with message', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 21, title: 'Doomed', description: 'desc', status: 'active' }],
+    });
+    deleteMock.mockRejectedValueOnce({ response: { data: { message: 'Delete rejected' } } });
+
+    renderDashboard();
+
+    await screen.findByText('Doomed');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Doomed' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Delete rejected');
+    });
+  });
+
+  it('closes the create modal when cancel button is clicked', async () => {
+    getMock.mockResolvedValueOnce({ data: [] });
+
+    renderDashboard();
+
+    await screen.findByText('No projects yet. Create your first project.');
+    fireEvent.click(screen.getByRole('button', { name: 'New Project' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes the create modal when the overlay backdrop is clicked', async () => {
+    getMock.mockResolvedValueOnce({ data: [] });
+
+    renderDashboard();
+
+    await screen.findByText('No projects yet. Create your first project.');
+    fireEvent.click(screen.getByRole('button', { name: 'New Project' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('presentation'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('pre-populates the edit modal form with the existing project data', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 22, title: 'My Project', description: 'My desc', status: 'on-hold' }],
+    });
+
+    renderDashboard();
+
+    await screen.findByText('My Project');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit My Project' }));
+
+    expect(screen.getByLabelText('Title')).toHaveValue('My Project');
+    expect(screen.getByLabelText('Description')).toHaveValue('My desc');
+    expect(screen.getByLabelText('Status')).toHaveValue('on-hold');
+  });
+
+  it('shows "No description yet." for projects without a description', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 23, title: 'Bare Project', description: null, status: 'active' }],
+    });
+
+    renderDashboard();
+
+    expect(await screen.findByText('No description yet.')).toBeInTheDocument();
+  });
+
+  it('renders the "Open Board" link pointing to the project board', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 24, title: 'Linked Project', description: 'desc', status: 'active' }],
+    });
+
+    renderDashboard();
+
+    const link = await screen.findByRole('link', { name: 'Open Board' });
+    expect(link).toHaveAttribute('href', '/projects/24');
+  });
+
+  it('shows validation error when update submitted with empty title', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 25, title: 'Has Title', description: 'desc', status: 'active' }],
+    });
+
+    renderDashboard();
+
+    await screen.findByText('Has Title');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Has Title' }));
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    expect(await screen.findByText('Project title is required')).toBeInTheDocument();
+    expect(putMock).not.toHaveBeenCalled();
+  });
+
+  it('closes the delete confirmation when cancel is clicked', async () => {
+    getMock.mockResolvedValueOnce({
+      data: [{ id: 26, title: 'Stay Alive', description: 'desc', status: 'active' }],
+    });
+
+    renderDashboard();
+
+    await screen.findByText('Stay Alive');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Stay Alive' }));
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
 });

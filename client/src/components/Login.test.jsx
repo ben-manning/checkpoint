@@ -8,6 +8,8 @@ const loginMock = vi.fn();
 const navigateMock = vi.fn();
 const postMock = vi.fn();
 
+const locationState = { state: { from: { pathname: '/projects/12' } } };
+
 vi.mock('../api/axios.js', () => ({
   default: {
     post: (...args) => postMock(...args),
@@ -23,7 +25,7 @@ vi.mock('react-router', async () => {
   return {
     ...actual,
     useNavigate: () => navigateMock,
-    useLocation: () => ({ state: { from: { pathname: '/projects/12' } } }),
+    useLocation: () => locationState,
   };
 });
 
@@ -32,6 +34,7 @@ describe('Login', () => {
     loginMock.mockReset();
     navigateMock.mockReset();
     postMock.mockReset();
+    locationState.state = { from: { pathname: '/projects/12' } };
   });
 
   it('submits credentials and navigates to the previous route on success', async () => {
@@ -107,5 +110,33 @@ describe('Login', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Log In' }));
 
     expect(await screen.findByText('Unable to login with those credentials')).toBeInTheDocument();
+  });
+
+  it('defaults to navigating to /dashboard when no from location state is set', async () => {
+    locationState.state = null;
+    postMock.mockResolvedValueOnce({
+      data: {
+        token: 'jwt-token',
+        user: { id: 1, name: 'User', email: 'user@example.com' },
+      },
+    });
+
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Email'), {
+      target: { value: 'user@example.com' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Password'), {
+      target: { value: 'secret123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Log In' }));
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true });
+    });
   });
 });

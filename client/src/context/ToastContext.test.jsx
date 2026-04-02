@@ -68,4 +68,19 @@ describe('ToastProvider', () => {
 
     expect(screen.queryByText('Saved!')).not.toBeInTheDocument();
   });
+
+  it('shows multiple toasts simultaneously', () => {
+    render(
+      <ToastProvider>
+        <ToastProbe />
+      </ToastProvider>
+    );
+
+    fireEvent.click(screen.getByText('toast-success'));
+    fireEvent.click(screen.getByText('toast-error'));
+    fireEvent.click(screen.getByText('toast-success'));
+
+    expect(screen.getAllByText('Saved!').length).toBe(2);
+    expect(screen.getByText('Failed!')).toBeInTheDocument();
+  });
 });

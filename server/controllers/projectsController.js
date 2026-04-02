@@ -1,9 +1,10 @@
 const pool = require('../db');
 
 const getProjects = async (req, res, next) => {
+  let userId = req.user.userId;
   try {
     const result = await pool.query(
-      'SELECT id, user_id, title, description, status, created_at FROM projects ORDER BY created_at DESC'
+      `SELECT id, user_id, title, description, status, created_at FROM projects WHERE user_id=${userId} ORDER BY created_at DESC`
     );
 
     res.status(200).json(result.rows);

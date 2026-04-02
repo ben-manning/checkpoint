@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '../context/useAuth.jsx';
 import '../styles/shared.css';

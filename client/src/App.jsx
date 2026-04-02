@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router';
 import Home from './components/Home.jsx';

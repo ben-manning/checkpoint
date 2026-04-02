@@ -65,6 +65,18 @@ describe('Projects API', () => {
       await pool.query('DELETE FROM projects WHERE id = $1', [res.body.id]);
     });
 
+    it('should set description to null when not provided', async () => {
+      const res = await request(app)
+        .post('/api/projects')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'No Description Project' });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.description).toBeNull();
+
+      await pool.query('DELETE FROM projects WHERE id = $1', [res.body.id]);
+    });
+
     it('should return 400 when title is missing', async () => {
       const res = await request(app)
         .post('/api/projects')
@@ -133,6 +145,50 @@ describe('Projects API', () => {
       expect(res.body.every((p) => p.user_id === testUser.id)).toBe(true);
     });
 
+    it('should return all expected fields for each project', async () => {
+      const res = await request(app)
+        .get('/api/projects')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.length).toBeGreaterThanOrEqual(1);
+      const project = res.body[0];
+      expect(project).toHaveProperty('id');
+      expect(project).toHaveProperty('user_id');
+      expect(project).toHaveProperty('title');
+      expect(project).toHaveProperty('description');
+      expect(project).toHaveProperty('status');
+      expect(project).toHaveProperty('created_at');
+      expect(project).not.toHaveProperty('password_hash');
+    });
+
+    it('should return projects ordered newest-first', async () => {
+      const firstRes = await request(app)
+        .post('/api/projects')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'Ordering First Project' });
+      const secondRes = await request(app)
+        .post('/api/projects')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'Ordering Second Project' });
+
+      const res = await request(app)
+        .get('/api/projects')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.length).toBeGreaterThanOrEqual(2);
+      const timestamps = res.body.map((p) => new Date(p.created_at).getTime());
+      for (let i = 0; i < timestamps.length - 1; i++) {
+        expect(timestamps[i]).toBeGreaterThanOrEqual(timestamps[i + 1]);
+      }
+
+      await pool.query('DELETE FROM projects WHERE id = $1 OR id = $2', [
+        firstRes.body.id,
+        secondRes.body.id,
+      ]);
+    });
+
     it('should not return other users projects', async () => {
       const res = await request(app)
         .get('/api/projects')
@@ -145,6 +201,14 @@ describe('Projects API', () => {
 
     it('should return 401 without a token', async () => {
       const res = await request(app).get('/api/projects');
+      expect(res.statusCode).toBe(401);
+    });
+
+    it('should return 401 with an invalid token', async () => {
+      const res = await request(app)
+        .get('/api/projects')
+        .set('Authorization', 'Bearer invalid.token.value');
+
       expect(res.statusCode).toBe(401);
     });
   });

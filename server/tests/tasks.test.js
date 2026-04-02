@@ -65,6 +65,38 @@ describe('Tasks API', () => {
       taskId = res.body.id;
     });
 
+    it('should include all expected fields in the task response', async () => {
+      const res = await request(app)
+        .post(`/api/projects/${testProjectId}/tasks`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'Fields Task', description: 'check fields', priority: 'low' });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty('id');
+      expect(res.body).toHaveProperty('project_id', testProjectId);
+      expect(res.body).toHaveProperty('title', 'Fields Task');
+      expect(res.body).toHaveProperty('description', 'check fields');
+      expect(res.body).toHaveProperty('status');
+      expect(res.body).toHaveProperty('priority', 'low');
+      expect(res.body).toHaveProperty('due_date');
+      expect(res.body).toHaveProperty('created_at');
+      expect(new Date(res.body.created_at).getTime()).not.toBeNaN();
+
+      await pool.query('DELETE FROM tasks WHERE id = $1', [res.body.id]);
+    });
+
+    it('should set description to null when not provided', async () => {
+      const res = await request(app)
+        .post(`/api/projects/${testProjectId}/tasks`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'No Description Task' });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.description).toBeNull();
+
+      await pool.query('DELETE FROM tasks WHERE id = $1', [res.body.id]);
+    });
+
     it('should default status to todo when not provided', async () => {
       const res = await request(app)
         .post(`/api/projects/${testProjectId}/tasks`)
@@ -169,6 +201,41 @@ describe('Tasks API', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThanOrEqual(1);
       expect(res.body.every((t) => t.project_id === testProjectId)).toBe(true);
+    });
+
+    it('should return all expected fields for each task', async () => {
+      const res = await request(app)
+        .get(`/api/projects/${testProjectId}/tasks`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.length).toBeGreaterThanOrEqual(1);
+      const task = res.body[0];
+      expect(task).toHaveProperty('id');
+      expect(task).toHaveProperty('project_id');
+      expect(task).toHaveProperty('title');
+      expect(task).toHaveProperty('description');
+      expect(task).toHaveProperty('status');
+      expect(task).toHaveProperty('priority');
+      expect(task).toHaveProperty('due_date');
+      expect(task).toHaveProperty('created_at');
+    });
+
+    it('should not return tasks from a different project', async () => {
+      const otherTaskRes = await request(app)
+        .post(`/api/projects/${otherProjectId}/tasks`)
+        .set('Authorization', `Bearer ${otherToken}`)
+        .send({ title: 'Other Project Task' });
+      const otherTaskId = otherTaskRes.body.id;
+
+      const res = await request(app)
+        .get(`/api/projects/${testProjectId}/tasks`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.find((t) => t.id === otherTaskId)).toBeUndefined();
+
+      await pool.query('DELETE FROM tasks WHERE id = $1', [otherTaskId]);
     });
 
     it('should return tasks ordered newest-first', async () => {

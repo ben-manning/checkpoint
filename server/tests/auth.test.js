@@ -48,6 +48,15 @@ describe('Auth API', () => {
       expect(res.body).toHaveProperty('message');
     });
 
+    it('should return 400 when name is an empty string', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: '', email: 'empty-name@example.com', password: 'password123' });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty('message');
+    });
+
     it('should return 400 when email is missing', async () => {
       const res = await request(app)
         .post('/api/auth/register')
@@ -57,10 +66,28 @@ describe('Auth API', () => {
       expect(res.body).toHaveProperty('message');
     });
 
+    it('should return 400 when email is an empty string', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: 'No Email', email: '', password: 'password123' });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty('message');
+    });
+
     it('should return 400 when password is missing', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({ name: 'No Password', email: 'no-password@example.com' });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty('message');
+    });
+
+    it('should return 400 when password is an empty string', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: 'No Password', email: 'no-password@example.com', password: '' });
 
       expect(res.statusCode).toBe(400);
       expect(res.body).toHaveProperty('message');
@@ -119,10 +146,28 @@ describe('Auth API', () => {
       expect(res.body).toHaveProperty('message');
     });
 
+    it('should return 400 when email is an empty string', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: '', password: 'password123' });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty('message');
+    });
+
     it('should return 400 when password is missing', async () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({ email: existingUser.email });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty('message');
+    });
+
+    it('should return 400 when password is an empty string', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: existingUser.email, password: '' });
 
       expect(res.statusCode).toBe(400);
       expect(res.body).toHaveProperty('message');
@@ -168,9 +213,40 @@ describe('Auth API', () => {
       expect(res.body.email).toBe(existingUser.email);
     });
 
+    it('should include created_at in the user profile response', async () => {
+      const token = generateToken(existingUser.id);
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('created_at');
+      expect(new Date(res.body.created_at).getTime()).not.toBeNaN();
+    });
+
+    it('should not return password_hash in the profile response', async () => {
+      const token = generateToken(existingUser.id);
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).not.toHaveProperty('password_hash');
+    });
+
     it('should return 401 without a token', async () => {
       const res = await request(app).get('/api/auth/me');
       expect(res.statusCode).toBe(401);
+    });
+
+    it('should return 401 when the Authorization header does not use the Bearer scheme', async () => {
+      const token = generateToken(existingUser.id);
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Token ${token}`);
+
+      expect(res.statusCode).toBe(401);
+      expect(res.body).toHaveProperty('message', 'No token provided');
     });
 
     it('should return 401 with an expired token', async () => {

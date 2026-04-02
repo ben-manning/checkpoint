@@ -19,11 +19,6 @@ const Nav = () => {
         <Link to="/" className="navbar-home-link" aria-label="Home">
           <img className="navbar-home-logo" src={checkpointNavbarLogo} alt="Checkpoint home" />
         </Link>
-        {currentUser && (
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
-            Dashboard
-          </NavLink>
-        )}
       </div>
       <div className="nav-right">
         {currentUser ? (

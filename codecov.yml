@@ -1,0 +1,14 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+
+flags:
+  backend:
+    paths:
+      - server/
+  frontend:
+    paths:
+      - client/

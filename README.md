@@ -2,7 +2,7 @@
 # 🗂️ PERN Project Management App
 
 [![Backend Coverage](https://codecov.io/gh/ben-manning/checkpoint/graph/badge.svg?flag=backend)](https://codecov.io/gh/ben-manning/checkpoint)
-[![Frontend Coverage](https://codecov.io/gh/ben-manning/checkpoint/graph/badge.svg?flag=frontend)](https://codecov.io/gh/ben-manning/checkpoint)
+[![Frontend Coverage](https://codecov.io/gh/ben-manning/checkpoint/flags/frontend/graph/badge.svg)](https://codecov.io/gh/ben-manning/checkpoint/flags/frontend)
 
 A full-stack project management application built with PostgreSQL, Express, React, and Node.js.
 
@@ -145,6 +145,8 @@ checkpoint/
 │   │   ├── index.js
 │   │   └── schema.sql
 │   └── app.js
+│   └── package.json
+└── README.md
 ```
 
 ---
@@ -160,16 +162,6 @@ checkpoint/
 - Deploy from GitHub, set root to `client/`
 - Add `VITE_API_URL` in Vercel dashboard (point to Render backend)
 - Live URL: https://checkpoint-hazel.vercel.app/
-
----
-
-## 📝 License
-
-MIT
-│   └── package.json
-└── README.md
-```
-
 
 ---
 

@@ -31,6 +31,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./coverage/lcov.info
+          files: ./client/coverage/lcov.info
           flags: frontend
           fail_ci_if_error: false

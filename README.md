@@ -145,6 +145,8 @@ checkpoint/
 │   │   ├── index.js
 │   │   └── schema.sql
 │   └── app.js
+│   └── package.json
+└── README.md
 ```
 
 ---
@@ -160,16 +162,6 @@ checkpoint/
 - Deploy from GitHub, set root to `client/`
 - Add `VITE_API_URL` in Vercel dashboard (point to Render backend)
 - Live URL: https://checkpoint-hazel.vercel.app/
-
----
-
-## 📝 License
-
-MIT
-│   └── package.json
-└── README.md
-```
-
 
 ---
 

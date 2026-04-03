@@ -1,6 +1,9 @@
 
 # 🗂️ PERN Project Management App
 
+[![Backend Coverage](https://codecov.io/gh/ben-manning/checkpoint/graph/badge.svg?flag=backend)](https://codecov.io/gh/ben-manning/checkpoint)
+[![Frontend Coverage](https://codecov.io/gh/ben-manning/checkpoint/graph/badge.svg?flag=frontend)](https://codecov.io/gh/ben-manning/checkpoint)
+
 A full-stack project management application built with PostgreSQL, Express, React, and Node.js.
 
 ---

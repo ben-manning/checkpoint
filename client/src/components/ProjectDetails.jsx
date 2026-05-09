@@ -28,6 +28,26 @@ const EMPTY_TASK_FORM = {
   due_date: '',
 };
 
+const PRIORITY_FILTER_OPTIONS = ['all', ...PRIORITY_OPTIONS];
+const DUE_FILTER_OPTIONS = [
+  { key: 'all', label: 'All' },
+  { key: 'overdue', label: 'Overdue' },
+  { key: 'due-soon', label: 'Due Soon' },
+];
+const EMPTY_FILTERS = { priority: 'all', dueDate: 'all' };
+
+const getDueDateStatus = (dueDate) => {
+  if (!dueDate) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate + 'T00:00:00');
+  if (due < today) return 'overdue';
+  return (due - today) / 86400000 <= 7 ? 'due-soon' : 'upcoming';
+};
+
+const formatDate = (dueDate) =>
+  new Date(dueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
 const ProjectDetails = () => {
   const { id } = useParams();
   const toast = useToast();
@@ -36,6 +56,7 @@ const ProjectDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [movingTaskId, setMovingTaskId] = useState(null);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskFormData, setTaskFormData] = useState(EMPTY_TASK_FORM);
@@ -68,20 +89,26 @@ const ProjectDetails = () => {
     fetchProjectAndTasks();
   }, [id]);
 
-  const tasksByColumn = useMemo(() => {
-    const grouped = {
-      todo: [],
-      in_progress: [],
-      done: [],
-    };
+  const isFiltered = filters.priority !== 'all' || filters.dueDate !== 'all';
 
-    tasks.forEach((task) => {
+  const tasksByColumn = useMemo(() => {
+    const filtered = tasks.filter((task) => {
+      if (filters.priority !== 'all' && task.priority !== filters.priority) return false;
+      if (filters.dueDate !== 'all') {
+        const dateStatus = getDueDateStatus(task.due_date);
+        if (filters.dueDate === 'overdue' && dateStatus !== 'overdue') return false;
+        if (filters.dueDate === 'due-soon' && dateStatus !== 'due-soon') return false;
+      }
+      return true;
+    });
+
+    const grouped = { todo: [], in_progress: [], done: [] };
+    filtered.forEach((task) => {
       const status = grouped[task.status] ? task.status : 'todo';
       grouped[status].push(task);
     });
-
     return grouped;
-  }, [tasks]);
+  }, [tasks, filters]);
 
   const moveTaskTo = async (task, nextStatus) => {
     if (task.status === nextStatus) {
@@ -244,6 +271,44 @@ const ProjectDetails = () => {
 
       {error && <p className='project-state error'>{error}</p>}
 
+      <div className='filter-bar'>
+        <div className='filter-group'>
+          <span className='filter-group-label'>Priority</span>
+          {PRIORITY_FILTER_OPTIONS.map((p) => (
+            <button
+              key={p}
+              type='button'
+              className={`filter-btn${filters.priority === p ? ' active' : ''}`}
+              onClick={() => setFilters((f) => ({ ...f, priority: p }))}
+            >
+              {p === 'all' ? 'All' : p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className='filter-group'>
+          <span className='filter-group-label'>Due</span>
+          {DUE_FILTER_OPTIONS.map(({ key, label }) => (
+            <button
+              key={key}
+              type='button'
+              className={`filter-btn${filters.dueDate === key ? ' active' : ''}`}
+              onClick={() => setFilters((f) => ({ ...f, dueDate: key }))}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {isFiltered && (
+          <button
+            type='button'
+            className='filter-btn filter-clear'
+            onClick={() => setFilters(EMPTY_FILTERS)}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       <div className='kanban-grid'>
         {KANBAN_COLUMNS.map((column) => (
           <section key={column.key} className='kanban-column'>
@@ -254,28 +319,39 @@ const ProjectDetails = () => {
 
             <div className='kanban-list'>
               {tasksByColumn[column.key].length === 0 ? (
-                <p className='empty-column'>No tasks</p>
+                <p className='empty-column'>{isFiltered ? 'No matching tasks' : 'No tasks'}</p>
               ) : (
-                tasksByColumn[column.key].map((task) => (
-                  <article key={task.id} className='task-card'>
-                    <div className='task-card-head'>
-                      <h4>{task.title}</h4>
-                      <button
-                        type='button'
-                        className='btn btn-danger'
-                        aria-label={`Delete ${task.title}`}
-                        onClick={() => openDeleteConfirm(task)}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                    <p>{task.description || 'No description'}</p>
-                    <small>
-                      Status: {STATUS_LABELS[task.status] || task.status}
-                    </small>
-                    {renderMoveButtons(task)}
-                  </article>
-                ))
+                tasksByColumn[column.key].map((task) => {
+                  const dueDateStatus = getDueDateStatus(task.due_date);
+                  return (
+                    <article key={task.id} className='task-card'>
+                      <div className='task-card-head'>
+                        <h4>{task.title}</h4>
+                        <button
+                          type='button'
+                          className='btn btn-danger'
+                          aria-label={`Delete ${task.title}`}
+                          onClick={() => openDeleteConfirm(task)}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                      <p>{task.description || 'No description'}</p>
+                      <div className='task-meta'>
+                        <span className={`priority-badge priority-${task.priority}`}>
+                          {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                        </span>
+                        {task.due_date && (
+                          <span className={`task-due${dueDateStatus === 'overdue' ? ' overdue' : ''}`}>
+                            {dueDateStatus === 'overdue' ? 'Overdue · ' : 'Due · '}
+                            {formatDate(task.due_date)}
+                          </span>
+                        )}
+                      </div>
+                      {renderMoveButtons(task)}
+                    </article>
+                  );
+                })
               )}
             </div>
           </section>
